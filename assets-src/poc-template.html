@@ -1,0 +1,365 @@
+<meta charset="utf-8">
+<title>Braise · Carte musculaire (POC)</title>
+<style>
+  :root {
+    --coal: #101012;
+    --panel: #17171a;
+    --panel-2: #1e1e22;
+    --ember: #ff8a1e;
+    --ember-core: #ffc46a;
+    --ember-deep: #8a4110;
+    --chalk: #f5f2ec;
+    --steel: #8b8b92;
+    --muscle-off: #26262b;
+    --muscle-edge: #3a3a41;
+    --line: #2a2a2f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--coal);
+    color: var(--chalk);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    min-height: 100vh;
+    background: radial-gradient(1100px 700px at 50% -8%, #1b1b1f 0%, var(--coal) 62%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 56px;
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: .32em;
+    color: var(--ember);
+    text-transform: uppercase;
+  }
+  h1 {
+    margin-top: 10px;
+    font-size: clamp(26px, 5vw, 40px);
+    font-weight: 800;
+    letter-spacing: .01em;
+    text-wrap: balance;
+    text-align: center;
+  }
+  .sub {
+    margin-top: 10px;
+    max-width: 46ch;
+    text-align: center;
+    color: var(--steel);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .controls {
+    margin-top: 26px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+  .seg {
+    display: flex;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--steel);
+    font: 600 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 9px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color .2s, background .2s;
+  }
+  .seg button.on {
+    background: var(--panel-2);
+    color: var(--chalk);
+    box-shadow: inset 0 0 0 1px #3a3a41;
+  }
+  .seg button:focus-visible, .ghost:focus-visible {
+    outline: 2px solid var(--ember);
+    outline-offset: 2px;
+  }
+  .ghost {
+    appearance: none;
+    background: transparent;
+    border: 1px solid #3c3c43;
+    color: var(--chalk);
+    font: 600 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+  }
+  .ghost:hover { border-color: var(--ember); color: var(--ember-core); }
+  .stage {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    gap: clamp(2px, 2vw, 36px);
+    width: 100%;
+    max-width: 720px;
+  }
+  .fig { flex: 1 1 0; max-width: 300px; min-width: 150px; }
+  .fig svg { width: 100%; height: auto; display: block; }
+  .fig .cap {
+    margin-top: 4px;
+    text-align: center;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: .42em;
+    color: var(--steel);
+    text-transform: uppercase;
+  }
+  .status {
+    margin-top: 22px;
+    min-height: 34px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    max-width: 640px;
+  }
+  .hint { color: #6c6c74; font-size: 13px; }
+  .chip {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--ember-core);
+    background: rgba(255, 138, 30, .09);
+    border: 1px solid rgba(255, 138, 30, .35);
+    border-radius: 999px;
+    padding: 6px 12px;
+  }
+  .legend {
+    margin-top: 26px;
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--steel);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .dot.p { background: radial-gradient(circle at 35% 35%, var(--ember-core), var(--ember) 60%, #c95f10); box-shadow: 0 0 8px rgba(255,138,30,.7); }
+  .dot.s { background: var(--ember-deep); }
+  .dot.o { background: var(--muscle-off); border: 1px solid var(--muscle-edge); }
+  .foot {
+    margin-top: 34px;
+    font-size: 12.5px;
+    color: #5d5d64;
+    text-align: center;
+    max-width: 52ch;
+    line-height: 1.6;
+  }
+  g.m path {
+    fill: var(--muscle-off);
+    stroke: var(--muscle-edge);
+    stroke-width: 1.5;
+    transition: fill .35s ease, filter .35s ease, opacity .5s ease, stroke .25s ease;
+  }
+  .mode-select g.m { cursor: pointer; }
+  g.m:focus { outline: none; }
+  .mode-select g.m:hover path, .mode-select g.m:focus-visible path { stroke: #9d9da6; }
+  .mode-select g.m.selected path {
+    fill: rgba(255, 138, 30, .26);
+    stroke: var(--ember);
+    stroke-width: 2.4;
+    filter: drop-shadow(0 0 9px rgba(255, 138, 30, .45));
+  }
+  g.m.primary path {
+    fill: url(#emberHot);
+    stroke: #d96a12;
+    filter: drop-shadow(0 0 12px rgba(255, 138, 30, .55));
+    animation: pulse 2.8s ease-in-out infinite;
+  }
+  g.m.secondary path {
+    fill: url(#emberDeep);
+    stroke: #6e3410;
+  }
+  g.m.unlit path { opacity: 0; }
+  @keyframes pulse {
+    0%, 100% { filter: drop-shadow(0 0 9px rgba(255, 138, 30, .40)); }
+    50%      { filter: drop-shadow(0 0 19px rgba(255, 138, 30, .75)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    g.m.primary path { animation: none; }
+    g.m path { transition: none; }
+  }
+</style>
+<div class="page">
+  <div class="eyebrow">Braise · preuve de concept</div>
+  <h1>La carte musculaire</h1>
+  <p class="sub">Tes silhouettes originales, vectorisées zone par zone et nettoyées : chaque muscle est un path SVG pilotable. Sélection au doigt, puis visualisation d'une séance avec allumage des braises.</p>
+  <div class="controls">
+    <div class="seg" role="tablist" aria-label="Mode">
+      <button id="btnSelect" class="on" aria-pressed="true">Sélection</button>
+      <button id="btnVisu" aria-pressed="false">Visualisation</button>
+    </div>
+    <button id="btnReplay" class="ghost" hidden>Rejouer l'allumage</button>
+    <button id="btnClear" class="ghost">Tout effacer</button>
+  </div>
+  <div class="stage">
+    <div class="fig"><svg id="front" role="img" aria-label="Silhouette de face"></svg><div class="cap">Face</div></div>
+    <div class="fig"><svg id="back" role="img" aria-label="Silhouette de dos"></svg><div class="cap">Dos</div></div>
+  </div>
+  <div class="status" id="status"><span class="hint">Tape un muscle pour le sélectionner</span></div>
+  <div class="legend">
+    <span><i class="dot p"></i>Sollicitation principale</span>
+    <span><i class="dot s"></i>Secondaire</span>
+    <span><i class="dot o"></i>Au repos</span>
+  </div>
+  <p class="foot">Démo : séance A full body (swings, goblet squat, rowing, press unilatéral, farmer carry). États principal et secondaire identiques au visuel source ; la carte finale sera pilotée par les données d'exercices.</p>
+</div>
+<script>
+/*__MUSCLES__*/
+const LABELS = {
+  trapezes: "Trapèzes", epaules: "Épaules", pectoraux: "Pectoraux", biceps: "Biceps",
+  triceps: "Triceps", avant_bras: "Avant-bras", abdominaux: "Abdominaux", obliques: "Obliques",
+  dorsaux: "Dorsaux", lombaires: "Lombaires", fessiers: "Fessiers", adducteurs: "Adducteurs",
+  quadriceps: "Quadriceps", ischios: "Ischio-jambiers", mollets: "Mollets"
+};
+const PRIMARY = [], SECONDARY = [];
+{
+  const states = {};
+  for (const fig of Object.values(MUSCLES)) {
+    for (const [g, s] of Object.entries(fig.states)) {
+      states[g] = states[g] || new Set();
+      s.forEach(v => states[g].add(v));
+    }
+  }
+  for (const [g, s] of Object.entries(states)) {
+    if (s.has("bright")) PRIMARY.push(g);
+    else if (s.has("dark")) SECONDARY.push(g);
+  }
+}
+
+const NS = "http://www.w3.org/2000/svg";
+function el(name, attrs, parent) {
+  const e = document.createElementNS(NS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function buildFigure(svg, defs, data) {
+  svg.setAttribute("viewBox", data.viewBox);
+  if (defs) {
+    const d = el("defs", {}, svg);
+    const hot = el("radialGradient", { id: "emberHot", cx: "0.4", cy: "0.35", r: "0.85" }, d);
+    el("stop", { offset: "0%", "stop-color": "#ffc46a" }, hot);
+    el("stop", { offset: "55%", "stop-color": "#ff8a1e" }, hot);
+    el("stop", { offset: "100%", "stop-color": "#d96a12" }, hot);
+    const deep = el("radialGradient", { id: "emberDeep", cx: "0.4", cy: "0.35", r: "0.9" }, d);
+    el("stop", { offset: "0%", "stop-color": "#a5551a" }, deep);
+    el("stop", { offset: "100%", "stop-color": "#6e3410" }, deep);
+  }
+  for (const d of data.body) {
+    el("path", { d, fill: "#1a1a1e", stroke: "#8f8f96", "stroke-width": "2.6" }, svg);
+  }
+  for (const [group, paths] of Object.entries(data.groups)) {
+    const g = el("g", { class: "m", "data-group": group, tabindex: "0", role: "button", "aria-pressed": "false", "aria-label": LABELS[group] }, svg);
+    const t = document.createElementNS(NS, "title");
+    t.textContent = LABELS[group];
+    g.appendChild(t);
+    for (const d of paths) el("path", { d }, g);
+  }
+}
+buildFigure(document.getElementById("front"), true, MUSCLES.face);
+buildFigure(document.getElementById("back"), false, MUSCLES.dos);
+
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let mode = "select";
+const selected = new Set();
+const allGroups = () => document.querySelectorAll("g.m");
+const byGroup = g => document.querySelectorAll(`g.m[data-group="${g}"]`);
+const status = document.getElementById("status");
+
+function renderStatus() {
+  status.innerHTML = "";
+  if (mode === "visu") {
+    const s = document.createElement("span");
+    s.className = "chip";
+    s.textContent = "Séance A full body · 4 tours · " + PRIMARY.length + " groupes principaux";
+    status.appendChild(s);
+    return;
+  }
+  if (!selected.size) {
+    status.innerHTML = '<span class="hint">Tape un muscle pour le sélectionner</span>';
+    return;
+  }
+  for (const g of selected) {
+    const c = document.createElement("span");
+    c.className = "chip";
+    c.textContent = LABELS[g];
+    status.appendChild(c);
+  }
+}
+function applySelectMode() {
+  document.body.classList.add("mode-select");
+  allGroups().forEach(n => {
+    n.classList.remove("primary", "secondary", "unlit");
+    n.style.transitionDelay = "";
+    const g = n.dataset.group;
+    n.classList.toggle("selected", selected.has(g));
+    n.setAttribute("aria-pressed", selected.has(g));
+  });
+  renderStatus();
+}
+function ignite() {
+  const order = PRIMARY.concat(SECONDARY);
+  allGroups().forEach(n => { n.classList.remove("selected", "primary", "secondary"); n.classList.add("unlit"); n.style.transitionDelay = ""; });
+  order.forEach((g, i) => {
+    byGroup(g).forEach(n => {
+      n.classList.add(PRIMARY.includes(g) ? "primary" : "secondary");
+      if (!reduced) n.style.transitionDelay = (120 + i * 110) + "ms";
+    });
+  });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    allGroups().forEach(n => n.classList.remove("unlit"));
+  }));
+  renderStatus();
+}
+function setMode(m) {
+  mode = m;
+  document.getElementById("btnSelect").classList.toggle("on", m === "select");
+  document.getElementById("btnVisu").classList.toggle("on", m === "visu");
+  document.getElementById("btnSelect").setAttribute("aria-pressed", m === "select");
+  document.getElementById("btnVisu").setAttribute("aria-pressed", m === "visu");
+  document.getElementById("btnReplay").hidden = m !== "visu";
+  document.getElementById("btnClear").hidden = m !== "select";
+  document.body.classList.toggle("mode-select", m === "select");
+  if (m === "visu") ignite(); else applySelectMode();
+}
+document.getElementById("btnSelect").addEventListener("click", () => setMode("select"));
+document.getElementById("btnVisu").addEventListener("click", () => setMode("visu"));
+document.getElementById("btnReplay").addEventListener("click", ignite);
+document.getElementById("btnClear").addEventListener("click", () => { selected.clear(); applySelectMode(); });
+
+function toggle(g) {
+  if (mode !== "select") return;
+  selected.has(g) ? selected.delete(g) : selected.add(g);
+  byGroup(g).forEach(n => {
+    n.classList.toggle("selected", selected.has(g));
+    n.setAttribute("aria-pressed", selected.has(g));
+  });
+  renderStatus();
+}
+document.addEventListener("click", e => {
+  const m = e.target.closest("g.m");
+  if (m) toggle(m.dataset.group);
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const m = e.target.closest ? e.target.closest("g.m") : null;
+  if (m) { e.preventDefault(); toggle(m.dataset.group); }
+});
+setMode("select");
+</script>
