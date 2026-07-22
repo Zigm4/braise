@@ -20,7 +20,12 @@ restent dans ton navigateur.
   (identifiants d'exercices Garmin vérifiés) ; test de non-régression par
   décodage round-trip.
 - Export PNG 1200 × 1740 de la carte musculaire de la séance, dans la mise en
-  page de l'illustration d'origine.
+  page de l'illustration d'origine, avec partage natif (feuille de partage
+  iOS et Android) quand le navigateur le permet.
+- Échauffement détaillé : 4 mouvements de 60 s choisis selon les muscles de la
+  séance, affichés sur la fiche et inscrits dans les notes du fichier .FIT.
+- Fonctionne hors ligne : toute l'app est précachée par un service worker et
+  se met à jour automatiquement à chaque déploiement.
 - Séances sauvegardées en localStorage, renommage, suppression, export et
   import JSON.
 - 3 thèmes commutables (Braise, Acier, Fusion), tokens gérés dans

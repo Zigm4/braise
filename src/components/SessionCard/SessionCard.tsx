@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { EXERCISE_BY_ID } from '../../data/exercises'
 import { GENERATOR_CONFIG, LEVEL_LABELS } from '../../data/generatorConfig'
 import type { Exercise, Session } from '../../data/types'
-import { exportSessionPng } from '../../lib/pngExport'
+import { canShareFiles, exportSessionPng } from '../../lib/pngExport'
 import { formatMinutes, sessionMuscles, sessionSeconds, stepVolumeLabel } from '../../lib/session'
+import { warmupMoveSeconds, warmupPlan } from '../../lib/warmup'
 import { ExerciseSheet } from '../ExerciseSheet/ExerciseSheet'
 import { MuscleMap } from '../MuscleMap/MuscleMap'
 
@@ -21,7 +22,9 @@ export function SessionCard({ session, saved, onVariante, onSave, onOpenGuide }:
   const [exporting, setExporting] = useState(false)
   const [fitLoading, setFitLoading] = useState(false)
   const usage = useMemo(() => sessionMuscles(session), [session])
+  const warmup = useMemo(() => warmupPlan(session), [session])
   const total = sessionSeconds(session)
+  const share = canShareFiles()
 
   const exportPng = async () => {
     setExporting(true)
@@ -64,9 +67,19 @@ export function SessionCard({ session, saved, onVariante, onSave, onOpenGuide }:
       </div>
 
       <ol className="mt-6 space-y-1">
-        <li className="flex justify-between px-3 py-2 rounded-lg" style={{ color: 'var(--ink-muted)' }}>
-          <span>Échauffement</span>
-          <span className="font-mono text-sm">{formatMinutes(GENERATOR_CONFIG.warmupSeconds)}</span>
+        <li className="px-3 py-2 rounded-lg" style={{ color: 'var(--ink-muted)' }}>
+          <div className="flex justify-between">
+            <span>Échauffement</span>
+            <span className="font-mono text-sm">{formatMinutes(GENERATOR_CONFIG.warmupSeconds)}</span>
+          </div>
+          <ul className="mt-1 space-y-0.5">
+            {warmup.map((move) => (
+              <li key={move.id} className="flex justify-between text-sm pl-4" title={move.cue}>
+                <span>{move.nameFr}</span>
+                <span className="font-mono text-xs self-center">{warmupMoveSeconds()} s</span>
+              </li>
+            ))}
+          </ul>
         </li>
         {session.steps.map((step, i) => {
           if (step.kind !== 'exercise' || !step.exerciseId) return null
@@ -108,7 +121,7 @@ export function SessionCard({ session, saved, onVariante, onSave, onOpenGuide }:
           {fitLoading ? 'Préparation' : 'Télécharger le .FIT'}
         </button>
         <button className="btn" onClick={exportPng} disabled={exporting}>
-          {exporting ? 'Export en cours' : 'Exporter en image'}
+          {exporting ? 'Préparation' : share ? 'Partager l\'image' : 'Exporter en image'}
         </button>
         {onVariante && (
           <button className="btn" onClick={onVariante}>

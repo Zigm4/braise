@@ -3,6 +3,7 @@ import { EXERCISE_BY_ID } from '../../data/exercises'
 import { GENERATOR_CONFIG } from '../../data/generatorConfig'
 import type { Session } from '../../data/types'
 import { exportName } from '../generator'
+import { warmupPlan } from '../warmup'
 
 /**
  * Encodes a session as a Garmin FIT workout file (file type 5).
@@ -42,6 +43,7 @@ export function encodeSessionToFit(session: Session, now: Date = new Date()): Ui
         durationValue: cfg.warmupSeconds * 1000,
         targetType: 'open',
         wktStepName: step.label,
+        notes: warmupPlan(session).map((m) => m.nameFr).join(', '),
       })
     } else if (step.kind === 'exercise' && step.exerciseId) {
       const ex = EXERCISE_BY_ID[step.exerciseId]

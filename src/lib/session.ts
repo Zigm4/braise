@@ -46,6 +46,18 @@ export function stepVolumeLabel(step: SessionStep): string {
   return ex.unilateral ? `${step.reps}/côté` : `${step.reps} reps`
 }
 
+/** File-name friendly slug from a session name. */
+export function sessionSlug(name: string): string {
+  return (
+    name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || 'seance'
+  )
+}
+
 export function formatMinutes(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60)
   const s = Math.round(totalSeconds % 60)

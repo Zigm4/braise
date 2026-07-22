@@ -16,8 +16,11 @@ import '@fontsource/space-mono'
 import './index.css'
 import App from './App.tsx'
 import { applyTheme, loadThemeId } from './themes'
+import { registerSW } from 'virtual:pwa-register'
 
 applyTheme(loadThemeId())
+// Offline mode: precache the whole app, auto-update on new deploys.
+registerSW({ immediate: true })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

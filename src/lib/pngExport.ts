@@ -2,7 +2,7 @@ import { MUSCLE_SHAPES } from '../data/muscleShapes'
 import { MUSCLE_LABELS } from '../data/muscles'
 import { EXERCISE_BY_ID } from '../data/exercises'
 import type { FigureShapes, MuscleGroupId, Session } from '../data/types'
-import { sessionMuscles } from './session'
+import { sessionMuscles, sessionSlug } from './session'
 
 const W = 1200
 const H = 1740
@@ -75,7 +75,20 @@ export function buildSessionSvg(session: Session): string {
 </svg>`
 }
 
-export async function exportSessionPng(session: Session): Promise<void> {
+/** True when the platform offers a native share sheet for files (iOS, Android). */
+export function canShareFiles(): boolean {
+  try {
+    return (
+      typeof navigator !== 'undefined' &&
+      'canShare' in navigator &&
+      navigator.canShare({ files: [new File([], 'braise.png', { type: 'image/png' })] })
+    )
+  } catch {
+    return false
+  }
+}
+
+async function renderPngBlob(session: Session): Promise<Blob> {
   const svg = buildSessionSvg(session)
   const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
   const img = new Image()
@@ -89,13 +102,36 @@ export async function exportSessionPng(session: Session): Promise<void> {
   canvas.height = H
   const ctx = canvas.getContext('2d')!
   ctx.drawImage(img, 0, 0, W, H)
-  const blob = await new Promise<Blob>((resolve, reject) => {
+  return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Export PNG impossible'))), 'image/png')
   })
+}
+
+/**
+ * Shares the session card through the native share sheet when available
+ * (Messages, Strava, Photos on iPhone), falls back to a plain download.
+ */
+export async function exportSessionPng(session: Session): Promise<'shared' | 'downloaded'> {
+  const blob = await renderPngBlob(session)
+  const file = new File([blob], `braise-${sessionSlug(session.name)}.png`, { type: 'image/png' })
+
+  if (canShareFiles() && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: session.name })
+      return 'shared'
+    } catch (error) {
+      // The user closing the sheet is not a failure; anything else falls
+      // back to the download path below.
+      if ((error as DOMException).name === 'AbortError') return 'shared'
+    }
+  }
+
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `braise-${session.id}.png`
+  a.download = file.name
   a.click()
-  URL.revokeObjectURL(url)
+  // iOS Safari resolves blob downloads asynchronously: defer the revoke.
+  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+  return 'downloaded'
 }
