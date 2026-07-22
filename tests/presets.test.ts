@@ -13,6 +13,12 @@ describe('exercise base', () => {
       kb_chest_press: [0, 12], half_tgu: [5, 16], tgu: [5, 89],
       windmill: [5, 17], kb_situp: [27, 14], farmer: [3, 7],
       suitcase: [3, 7], waiter: [3, 5],
+      // Extension batch, ids verified against Profile.types of fitsdk 21.208.0
+      kb_clean: [18, 12], kb_clean_press: [18, 27], kb_push_press: [24, 8],
+      kb_jerk: [18, 15], kb_thruster: [28, 79], goblet_lunge: [17, 77],
+      step_up: [28, 67], gorilla_row: [23, 9], renegade_row: [23, 15],
+      racked_carry: [3, 7], overhead_carry: [3, 4], kb_sumo_deadlift: [8, 21],
+      kb_flye: [9, 4], kb_leg_raises: [16, 5], kb_overhead_swing: [28, 39],
     }
     expect(EXERCISES).toHaveLength(Object.keys(expected).length)
     for (const [id, [category, exercise]] of Object.entries(expected)) {

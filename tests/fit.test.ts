@@ -97,6 +97,33 @@ describe('FIT encoder', () => {
     expect(exercise.exerciseWeight).toBe(16)
   })
 
+  it('round-trips the extension-batch exercises with their verified ids', () => {
+    const session = {
+      id: 'lot', name: 'Lot complet', level: 'avance' as const, bells: 2 as const,
+      minutes: 20, rounds: 2, restSeconds: 75,
+      steps: [
+        { kind: 'warmup' as const, label: 'Échauffement' },
+        { kind: 'exercise' as const, exerciseId: 'kb_clean', reps: 6, label: 'Clean' },
+        { kind: 'exercise' as const, exerciseId: 'kb_thruster', reps: 8, label: 'Thruster' },
+        { kind: 'exercise' as const, exerciseId: 'kb_flye', reps: 10, label: 'Écarté' },
+        { kind: 'exercise' as const, exerciseId: 'overhead_carry', seconds: 25, label: 'Overhead carry' },
+        { kind: 'rest' as const, label: 'Repos' },
+        { kind: 'cooldown' as const, label: 'Retour au calme' },
+      ],
+    }
+    const steps = decode(encodeSessionToFit(session)).workoutStepMesgs
+    expect(steps[1].exerciseCategory).toBe('olympicLift')
+    expect(steps[1].exerciseName).toBe(12)
+    expect(steps[1].durationReps).toBe(12)
+    expect(steps[2].exerciseCategory).toBe('squat')
+    expect(steps[2].exerciseName).toBe(79)
+    expect(steps[3].exerciseCategory).toBe('flye')
+    expect(steps[3].exerciseName).toBe(4)
+    expect(steps[4].exerciseCategory).toBe('carry')
+    expect(steps[4].exerciseName).toBe(4)
+    expect(steps[4].durationTime).toBe(50)
+  })
+
   it('round-trips every preset without errors', () => {
     for (const preset of PRESETS) {
       const messages = decode(encodeSessionToFit(preset))
