@@ -31,6 +31,10 @@ restent dans ton navigateur.
 - 3 thèmes commutables (Braise, Acier, Fusion), tokens gérés dans
   `src/themes/`, polices OFL self-hostées.
 - Guide d'installation Garmin, Strava et Apple Watch intégré.
+- Bibliothèque de 35 exercices avec fiches complètes : photos de position
+  (free-exercise-db, domaine public, auto-hébergées) et liens vidéo vérifiés
+  (MuscleWiki en français, kettlebellsworkouts.com pour les mouvements
+  balistiques). Régénération : `python3 assets-src/fetch_media.py`.
 
 ## Installation
 

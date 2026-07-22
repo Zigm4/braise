@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { EXERCISE_MEDIA } from '../../data/exerciseMedia'
 import { MUSCLE_LABELS } from '../../data/muscles'
 import type { Exercise } from '../../data/types'
 import { MuscleMap } from '../MuscleMap/MuscleMap'
@@ -71,6 +72,30 @@ export function ExerciseSheet({ exercise, onClose }: ExerciseSheetProps) {
           </button>
         </div>
 
+        {(() => {
+          const media = EXERCISE_MEDIA[exercise.id]
+          if (!media?.photos) return null
+          return (
+            <figure className="mt-5">
+              <div className="grid grid-cols-2 gap-3">
+                {media.photos.map((path, i) => (
+                  <img
+                    key={path}
+                    src={`${import.meta.env.BASE_URL}${path}`}
+                    alt={i === 0 ? 'Position de départ' : 'Position d\'arrivée'}
+                    loading="lazy"
+                    className="w-full rounded-xl"
+                    style={{ border: '1px solid var(--line)', filter: 'saturate(0.9)' }}
+                  />
+                ))}
+              </div>
+              <figcaption className="font-mono text-[10px] mt-1" style={{ color: 'var(--ink-muted)' }}>
+                Photos : free-exercise-db, domaine public
+              </figcaption>
+            </figure>
+          )
+        })()}
+
         <div className="mt-5 grid sm:grid-cols-[1fr_150px] gap-5 items-start">
           <div>
             <h3 className="eyebrow mb-3">Exécution</h3>
@@ -89,6 +114,16 @@ export function ExerciseSheet({ exercise, onClose }: ExerciseSheetProps) {
               <br />
               Secondaires : {exercise.secondary.map((m) => MUSCLE_LABELS[m]).join(', ')}
             </p>
+            {EXERCISE_MEDIA[exercise.id]?.videoUrl && (
+              <a
+                className="btn ghost inline-block mt-4"
+                href={EXERCISE_MEDIA[exercise.id].videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Voir la vidéo <span aria-hidden="true">↗</span>
+              </a>
+            )}
           </div>
           <div className="hidden sm:block">
             <MuscleMap

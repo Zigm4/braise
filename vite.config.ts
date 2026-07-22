@@ -15,7 +15,19 @@ export default defineConfig({
       manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
+        // Exercise photos are cached on demand, not precached (2+ MB).
+        globIgnores: ['exercises/**'],
         navigateFallback: '/braise/index.html',
+        runtimeCaching: [
+          {
+            urlPattern: /\/braise\/exercises\/.*\.jpg$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'exercise-photos',
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 180 },
+            },
+          },
+        ],
       },
     }),
   ],
