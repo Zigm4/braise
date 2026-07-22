@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ExerciseLibrary } from './components/ExerciseLibrary/ExerciseLibrary'
 import { GarminGuide } from './components/GarminGuide/GarminGuide'
 import { PresetGallery } from './components/PresetGallery/PresetGallery'
 import { SessionBuilder } from './components/SessionBuilder/SessionBuilder'
@@ -9,17 +10,19 @@ import { generateSession } from './lib/generator'
 import { loadSessions, saveSession } from './lib/storage'
 import { applyTheme, loadThemeId } from './themes'
 
-type View = 'forge' | 'seance' | 'routines' | 'guide'
+type View = 'forge' | 'seance' | 'routines' | 'exercices' | 'guide'
 
 const VIEW_HASH: Record<View, string> = {
   forge: '#/',
   seance: '#/seance',
   routines: '#/routines',
+  exercices: '#/exercices',
   guide: '#/guide',
 }
 
 function viewFromHash(hash: string): View {
   if (hash.startsWith('#/routines')) return 'routines'
+  if (hash.startsWith('#/exercices')) return 'exercices'
   if (hash.startsWith('#/guide')) return 'guide'
   if (hash.startsWith('#/seance')) return 'seance'
   return 'forge'
@@ -100,6 +103,7 @@ export default function App() {
         <nav className="flex items-center gap-5" aria-label="Navigation principale">
           {navBtn('forge', 'Forger')}
           {navBtn('routines', 'Routines')}
+          {navBtn('exercices', 'Exercices')}
           {navBtn('guide', 'Guide')}
         </nav>
         <ThemePicker themeId={themeId} onChange={changeTheme} />
@@ -119,6 +123,7 @@ export default function App() {
 
       {view === 'seance' && <h1 className="sr-only">Séance</h1>}
       {view === 'routines' && <h1 className="sr-only">Routines et séances sauvegardées</h1>}
+      {view === 'exercices' && <h1 className="sr-only">Bibliothèque des exercices</h1>}
       {view === 'guide' && <h1 className="sr-only">Guide Garmin, Strava et Apple Watch</h1>}
 
       {view === 'seance' &&
@@ -139,6 +144,8 @@ export default function App() {
       {view === 'routines' && (
         <PresetGallery saved={saved} onSavedChange={setSaved} onOpen={openSession} />
       )}
+
+      {view === 'exercices' && <ExerciseLibrary />}
 
       {view === 'guide' && <GarminGuide />}
 
